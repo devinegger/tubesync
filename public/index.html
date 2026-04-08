@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TubeSync">
+  <meta name="theme-color" content="#111111">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <title>TubeSync</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap');
+
+    :root {
+      --bg: #111111;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --gold: #e5a00d;
+      --gold-dim: #a37209;
+      --text: #e8e8e8;
+      --text-muted: #666;
+      --red: #c0392b;
+      --green: #27ae60;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    header {
+      padding: 28px 24px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 10px;
+      height: 10px;
+      background: var(--gold);
+      display: inline-block;
+      flex-shrink: 0;
+      position: relative;
+      top: -1px;
+    }
+
+    header h1 {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 24px 32px;
+      max-width: 560px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .url-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 14px 16px;
+      resize: none;
+      height: 80px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    .url-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .url-input:focus {
+      border-color: var(--gold-dim);
+    }
+
+    .url-input:disabled {
+      opacity: 0.45;
+    }
+
+    .submit-btn {
+      margin-top: 12px;
+      width: 100%;
+      min-height: 52px;
+      background: var(--gold);
+      color: #111;
+      border: none;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .submit-btn:active {
+      background: var(--gold-dim);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+
+    /* Status card */
+    .status-card {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 20px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-card.visible {
+      display: block;
+    }
+
+    .status-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--status-color, var(--gold));
+    }
+
+    .status-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .status-text {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--status-color, var(--gold));
+      line-height: 1.2;
+    }
+
+    .status-url {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    /* State colors */
+    .state-queued    { --status-color: #e5a00d; }
+    .state-downloading { --status-color: #3498db; }
+    .state-done      { --status-color: #27ae60; }
+    .state-failed    { --status-color: #c0392b; }
+
+    footer {
+      padding: 0 24px 24px;
+      text-align: center;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="logo-mark"></span>
+    <h1>TubeSync</h1>
+  </header>
+
+  <main>
+    <p class="eyebrow">YouTube → MP3</p>
+
+    <textarea
+      id="urlInput"
+      class="url-input"
+      placeholder="https://youtube.com/watch?v=..."
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    ></textarea>
+
+    <button id="submitBtn" class="submit-btn">Download</button>
+
+    <hr class="divider">
+
+    <div id="statusCard" class="status-card">
+      <p class="status-label">Status</p>
+      <p id="statusText" class="status-text"></p>
+      <p id="statusUrl" class="status-url"></p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Plex · ~/Music/Karen</p>
+  </footer>
+
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    const urlInput  = document.getElementById('urlInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusCard = document.getElementById('statusCard');
+    const statusText = document.getElementById('statusText');
+    const statusUrl  = document.getElementById('statusUrl');
+
+    let pollTimer = null;
+
+    const STATE_MAP = {
+      queued:      { label: 'Queued',         cls: 'state-queued'       },
+      downloading: { label: 'Downloading...', cls: 'state-downloading'  },
+      done:        { label: 'Done ✅',         cls: 'state-done'         },
+      failed:      { label: 'Failed ❌',       cls: 'state-failed'       },
+    };
+
+    function showStatus(state, url) {
+      const info = STATE_MAP[state] || { label: state, cls: '' };
+      statusCard.className = 'status-card visible ' + info.cls;
+      statusText.textContent = info.label;
+      if (url) statusUrl.textContent = url;
+    }
+
+    function setFormDisabled(disabled) {
+      urlInput.disabled  = disabled;
+      submitBtn.disabled = disabled;
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    function startPolling(jobId, url) {
+      stopPolling();
+      pollTimer = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/status/${jobId}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          showStatus(data.status, url);
+          if (data.status === 'done' || data.status === 'failed') {
+            stopPolling();
+            setFormDisabled(false);
+          }
+        } catch (_) {}
+      }, 3000);
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) return;
+
+      stopPolling();
+      setFormDisabled(true);
+      showStatus('queued', url);
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Submit failed');
+        showStatus(data.status, url);
+        startPolling(data.jobId, url);
+      } catch (err) {
+        showStatus('failed', url);
+        statusText.textContent = 'Failed ❌';
+        setFormDisabled(false);
+      }
+    });
+  </script>
+</body>
+</html>
