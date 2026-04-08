@@ -19,16 +19,16 @@ export function processNext() {
   console.log(`[TubeSync] Starting download: ${job.url} (job ${jobId})`);
 
   const args = [
-    '-x',
-    '--audio-format', 'mp3',
-    '--embed-metadata',
-    '--no-overwrites',
-    '--no-playlist',
-    '--extractor-args', 'youtube:player_client=web', 
-    '--print', 'after_move:filepath',
-    '-o', `${MUSIC_DIR}/%(title)s.%(ext)s`,
-    job.url,
-  ];
+  '-x',
+  '--audio-format', 'mp3',
+  '--embed-metadata',
+  '--no-overwrites',
+  '--no-playlist',
+  '--js-runtimes', 'node:/usr/local/bin/node',
+  '--print', 'after_move:filepath',
+  '-o', `${MUSIC_DIR}/%(title)s.%(ext)s`,
+  job.url,
+];
 
   const child = spawn(YTDLP_BIN, args);
   let outputPath = null;
