@@ -23,6 +23,8 @@ export function processNext() {
     '--audio-format', 'mp3',
     '--embed-metadata',
     '--no-overwrites',
+    '--no-playlist',
+    '--extractor-args', 'youtube:player_client=web', 
     '--print', 'after_move:filepath',
     '-o', `${MUSIC_DIR}/%(title)s.%(ext)s`,
     job.url,
